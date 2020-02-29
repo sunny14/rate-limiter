@@ -14,10 +14,14 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation ('org.springframework.boot:spring-boot-starter-data-redis:2.2.5.RELEASE')   {
+        exclude group :'redis.clients', module :'jedis'
+    }
+    implementation 'redis.clients:jedis:3.2.0'
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
+    implementation 'junit:junit:4.12'
 }
 
 test {
