@@ -3,7 +3,9 @@ package sunny14.ratelimiter;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import sunny14.ratelimiter.entity.UrlRecord;
 import sunny14.ratelimiter.repo.UrlRepo;
@@ -25,14 +27,17 @@ public class RateLimiterServiceTests {
 
     private static final String TEST_URL  = "www.anyurl.com";
 
-    private Long ttl = 60000L;
+    @Value("${ttl}")
+    private Long ttl;
 
-    private Long threshold = 3L;
+    @Value("${threshold}")
+    private Long threshold;
 
-    @MockBean
+
+    @Mock
     private Hasher hasher;
 
-    @MockBean
+    @Mock
     private UrlRepo repo;
 
     @InjectMocks
