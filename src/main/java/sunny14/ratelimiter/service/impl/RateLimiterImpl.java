@@ -54,9 +54,10 @@ public class RateLimiterImpl implements RateLimiter {
         else {
             UrlRecord rec = new UrlRecord(hashedUrl, incomeTs);
             repo.save(rec);
+
+            return false;
         }
 
-        return true;
     }
 
 }

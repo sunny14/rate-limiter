@@ -4,15 +4,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 import sunny14.ratelimiter.entity.UrlRecord;
 import sunny14.ratelimiter.repo.UrlRepo;
 import sunny14.ratelimiter.service.Hasher;
 import sunny14.ratelimiter.service.RateLimiter;
 import sunny14.ratelimiter.service.exceptions.HasherException;
 import sunny14.ratelimiter.service.exceptions.RateLimiterException;
+import sunny14.ratelimiter.service.impl.RateLimiterImpl;
 
 import java.util.Optional;
 
@@ -22,17 +23,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@SpringBootTest
+@RunWith(SpringRunner.class)
+@TestPropertySource(properties = {"ttl=60000", "threshold=5"})
 public class RateLimiterServiceTests {
 
     private static final String TEST_URL  = "www.anyurl.com";
 
-    @Value("${ttl}")
-    private Long ttl;
-
-    @Value("${threshold}")
-    private Long threshold;
-
+    private Long ttl = 60000L;
+    private Long threshold = 5L;
 
     @Mock
     private Hasher hasher;
@@ -41,13 +40,12 @@ public class RateLimiterServiceTests {
     private UrlRepo repo;
 
     @InjectMocks
-    private RateLimiter limiter;
+    private RateLimiter limiter = new RateLimiterImpl(ttl, threshold);
 
 
     @Test
     public void noMatchTest() throws RateLimiterException {
-    // TODO:     verify(hasher.hash(anyString()));
-        when(repo.findById(anyString())).thenReturn(null);
+        when(repo.findById(anyString())).thenReturn(Optional.empty());
 
         boolean isBlocked = this.limiter.isBlocked(TEST_URL, System.currentTimeMillis());
         assertFalse(isBlocked);
@@ -56,10 +54,10 @@ public class RateLimiterServiceTests {
     @Test
     public void matchWithinThresholdTest() throws HasherException, RateLimiterException {
 
-        //create mock record with ttl-1 timestamps within a threshold
+        //create mock record with {ttl-1} timestamps within a threshold
         Long ts = System.currentTimeMillis();
         UrlRecord rec = new UrlRecord(TEST_URL, ts);
-        long countToSet = threshold-1L;
+        long countToSet = threshold-2L;
         for (int i=0; i<countToSet; i++) {
             rec.inc(ts, ttl, threshold);
         }
