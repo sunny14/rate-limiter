@@ -3,6 +3,7 @@ package sunny14.ratelimiter.service.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import sunny14.ratelimiter.entity.UrlRecord;
 import sunny14.ratelimiter.repo.UrlRepo;
 import sunny14.ratelimiter.service.Hasher;
@@ -33,6 +34,7 @@ public class RateLimiterImpl implements RateLimiter {
     }
 
     @Override
+    @Transactional
     public boolean isBlocked(String url, Long incomeTs) throws RateLimiterException {
 
         String hashedUrl;
