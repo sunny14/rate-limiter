@@ -1,5 +1,5 @@
 # rate-limiter
-Simple rate limiter service in Java + Springboot
+Simple rate limiter service in Java + Springboot + Redis
 
 # How to run
 1. Checkout from GitHub
