@@ -2,7 +2,6 @@ package sunny14.ratelimiter.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,8 +32,6 @@ public class UrlRecord {
         this.count = this.tsList.size();
     }
 
-    //TODO: make sure that @Transactional works
-    @Transactional
     public boolean inc(Long ts, Long ttl, Long threshold) {
 
         this.update(ts, ttl);
