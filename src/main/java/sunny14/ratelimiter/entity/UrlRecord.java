@@ -17,10 +17,10 @@ public class UrlRecord {
     private int count = 0;
     private List<Date> tsList = new ArrayList();
 
-    public UrlRecord(String hashedUrl, Long ts)   {
+    public UrlRecord(String hashedUrl, List <Date> tsList)   {
         this.hashedUrl = hashedUrl;
         this.count = 1;
-        this.tsList.add(new Date(ts));
+        this.tsList = tsList;
     }
 
 

@@ -11,6 +11,9 @@ import sunny14.ratelimiter.service.RateLimiter;
 import sunny14.ratelimiter.service.exceptions.HasherException;
 import sunny14.ratelimiter.service.exceptions.RateLimiterException;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 public class RateLimiterImpl implements RateLimiter {
@@ -54,7 +57,9 @@ public class RateLimiterImpl implements RateLimiter {
             return !isInc;
         }
         else {
-            UrlRecord rec = new UrlRecord(hashedUrl, incomeTs);
+            List<Date> dates = new ArrayList<Date>();
+            dates.add(new Date(incomeTs));
+            UrlRecord rec = new UrlRecord(hashedUrl, dates);
             repo.save(rec);
 
             return false;

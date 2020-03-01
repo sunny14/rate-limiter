@@ -15,6 +15,9 @@ import sunny14.ratelimiter.service.exceptions.HasherException;
 import sunny14.ratelimiter.service.exceptions.RateLimiterException;
 import sunny14.ratelimiter.service.impl.RateLimiterImpl;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertFalse;
@@ -56,7 +59,9 @@ public class RateLimiterServiceTests {
 
         //create mock record with {ttl-1} timestamps within a threshold
         Long ts = System.currentTimeMillis();
-        UrlRecord rec = new UrlRecord(TEST_URL, ts);
+        List<Date> dates = new ArrayList<Date>();
+        dates.add(new Date(ts));
+        UrlRecord rec = new UrlRecord(TEST_URL, dates);
         long countToSet = threshold-2L;
         for (int i=0; i<countToSet; i++) {
             rec.inc(ts, ttl, threshold);
@@ -73,7 +78,9 @@ public class RateLimiterServiceTests {
 
         //create mock record with ttl-1 timestamps within a threshold + 1 expired timestamp
         Long expiredTs = System.currentTimeMillis()-ttl*2;
-        UrlRecord rec = new UrlRecord(TEST_URL, expiredTs);
+        List<Date> dates = new ArrayList();
+        dates.add(new Date(expiredTs));
+        UrlRecord rec = new UrlRecord(TEST_URL, dates);
         Long goodTs = System.currentTimeMillis();
         long countToSet = threshold-1L;
         for (int i=0; i<countToSet; i++) {
@@ -91,7 +98,9 @@ public class RateLimiterServiceTests {
 
         //create mock record with ttl+1 timestamps within a threshold
         Long ts = System.currentTimeMillis();
-        UrlRecord rec = new UrlRecord(TEST_URL, ts);
+        List<Date> dates = new ArrayList();
+        dates.add(new Date(ts));
+        UrlRecord rec = new UrlRecord(TEST_URL, dates);
         long countToSet = threshold;
         for (int i=0; i<countToSet; i++) {
             rec.inc(ts, ttl, threshold);
