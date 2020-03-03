@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import sunny14.ratelimiter.service.RateLimiter;
 import sunny14.ratelimiter.service.exceptions.RateLimiterException;
 
+import javax.websocket.server.PathParam;
+
 @RestController
 @RequestMapping(path = "/")
 public class RateLimiterRest {
@@ -18,28 +20,25 @@ public class RateLimiterRest {
     @Autowired
     private RateLimiter limiter;
 
-    @PostMapping(path = "/report", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<Object> isBlocked(@RequestBody String url) {
+    @GetMapping
+    public ResponseEntity<Object> isBlocked(@RequestParam("clientId") String idStr) {
 
         try {
-            boolean isBlocked = limiter.isBlocked(url, System.currentTimeMillis());
-            return ResponseEntity.ok(new Pair(isBlocked));
+            long id = Long.parseLong(idStr);
+            boolean isBlocked = limiter.isBlocked(id, System.currentTimeMillis());
+            if (isBlocked)  {
+                return ResponseEntity.ok(HttpStatus.SERVICE_UNAVAILABLE);
+            }
+            return ResponseEntity.ok(HttpStatus.OK);
+
         } catch (RateLimiterException e) {
             log.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }
-
-    private class Pair  {
-        boolean block;
-        public Pair(boolean bl) {
-            this.block = bl;
-        }
-
-        public boolean getBlock()   {
-            return block;
+        catch (NumberFormatException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 
 }

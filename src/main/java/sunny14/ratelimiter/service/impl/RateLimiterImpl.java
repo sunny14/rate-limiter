@@ -2,29 +2,16 @@ package sunny14.ratelimiter.service.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-import sunny14.ratelimiter.entity.UrlRecord;
-import sunny14.ratelimiter.repo.UrlRepo;
-import sunny14.ratelimiter.service.Hasher;
 import sunny14.ratelimiter.service.RateLimiter;
-import sunny14.ratelimiter.service.exceptions.HasherException;
-import sunny14.ratelimiter.service.exceptions.RateLimiterException;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class RateLimiterImpl implements RateLimiter {
 
     private static Logger log = LoggerFactory.getLogger("RateLimiterImpl");
 
-    @Autowired
-    private Hasher hasher;
-
-    @Autowired
-    private UrlRepo repo;
+    private Map<Long, List<Date>> requests = new HashMap<>();
 
     private Long ttl, threshold;
 
@@ -37,33 +24,32 @@ public class RateLimiterImpl implements RateLimiter {
     }
 
     @Override
-    @Transactional
-    public boolean isBlocked(String url, Long incomeTs) throws RateLimiterException {
+    public boolean isBlocked(long id, Long incomeTs){
 
-        String hashedUrl;
-
-        try {
-            hashedUrl = hasher.hash(url);
-        } catch (HasherException e) {
-            throw new RateLimiterException(e.getCause());
-        }
-
-        Optional op = repo.findById(hashedUrl);
-        if (op.isPresent()) {
-            UrlRecord rec = (UrlRecord) op.get();
-            boolean isInc = rec.inc(incomeTs, ttl, threshold);
-            repo.save(rec);
-
-            return !isInc;
+        List<Date> dates = requests.get(id);
+        if (dates != null && !dates.isEmpty()) {
+            dates = update(dates, incomeTs);
         }
         else {
-            List<Date> dates = new ArrayList<Date>();
-            dates.add(new Date(incomeTs));
-            UrlRecord rec = new UrlRecord(hashedUrl, dates);
-            repo.save(rec);
+            dates = new ArrayList<>();
+        }
 
+        dates.add(new Date(incomeTs));
+        requests.put(id, dates);
+
+        if (dates.size() <= this.threshold )   {
             return false;
         }
+
+        return true;
+
+    }
+
+    private List<Date> update(List<Date> dates, Long ts) {
+        Date newStart = new Date(ts-this.ttl);
+        return dates.stream()
+                .filter(date -> !date.before(newStart))
+                .collect(Collectors.toList());
 
     }
 
