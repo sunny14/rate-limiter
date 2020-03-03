@@ -12,12 +12,3 @@ body:
 {
   "url": "http://www.sample.com"
 }
-
-# Design Issues:
-
-1. Fixed Window Algorithm (as required)
-
-Solution: Rolling Window Algorithm
-
-2. A URL can be url-encoded or not (or even url-encoded multiple times).
- This service will identify each additional url-encoding as different url's
