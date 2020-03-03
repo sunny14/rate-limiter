@@ -5,15 +5,16 @@ import org.slf4j.LoggerFactory;
 import sunny14.ratelimiter.service.RateLimiter;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class RateLimiterImpl implements RateLimiter {
 
     private static Logger log = LoggerFactory.getLogger("RateLimiterImpl");
 
-    private Map<Long, List<Date>> requests = new HashMap<>();
+    private Map<Long, List<Date>> requests = new ConcurrentHashMap<>();
 
-    private Long ttl, threshold;
+    private final Long ttl, threshold;
 
 
 
@@ -26,22 +27,33 @@ public class RateLimiterImpl implements RateLimiter {
     @Override
     public boolean isBlocked(long id, Long incomeTs){
 
-        List<Date> dates = requests.get(id);
-        if (dates != null && !dates.isEmpty()) {
-            dates = update(dates, incomeTs);
-        }
-        else {
-            dates = new ArrayList<>();
-        }
+        List<Date> dates;
 
-        dates.add(new Date(incomeTs));
-        requests.put(id, dates);
+            dates = requests.get(id);
+            if (dates != null) {
+                synchronized (dates) {
+                    dates = update(dates, incomeTs);
+                    dates.add(new Date(incomeTs));
+                    requests.put(id, dates);
+                }
 
-        if (dates.size() <= this.threshold )   {
-            return false;
-        }
+            }
+            else {
+                synchronized (this) {
+                    if (requests.get(id) == null) {
+                        dates = new ArrayList<>();
+                        dates.add(new Date(incomeTs));
+                        requests.put(id, dates);
+                    }
+                    else {
+                        dates = update(dates, incomeTs);
+                        dates.add(new Date(incomeTs));
+                        requests.put(id, dates);
+                    }
+                }
+            }
 
-        return true;
+        return  !(dates.size() <= this.threshold );
 
     }
 

@@ -26,14 +26,10 @@ public class RateLimiterRest {
         try {
             long id = Long.parseLong(idStr);
             boolean isBlocked = limiter.isBlocked(id, System.currentTimeMillis());
-            if (isBlocked)  {
+            if (isBlocked) {
                 return ResponseEntity.ok(HttpStatus.SERVICE_UNAVAILABLE);
             }
             return ResponseEntity.ok(HttpStatus.OK);
-
-        } catch (RateLimiterException e) {
-            log.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
         catch (NumberFormatException e) {
             log.error(e.getMessage());
